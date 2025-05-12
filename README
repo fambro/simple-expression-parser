@@ -1,0 +1,28 @@
+# Simple expression parser
+
+This is a simple expression parser that can parse and evaluate mathematical comparison.
+
+It parse current grammar
+
+```
+BNF:
+ <expressions> ::= <e> EOF
+ <e> ::= <e> "and" <e>
+       | <e> "==" <e>
+       | <e> "!=" <e>
+       | <e> "<" <e>
+       | <e> "<=" <e>
+       | <e> ">" <e>
+       | <e> ">=" <e>
+       | NUMBER
+       | STRING
+       | BOOLEAN
+       | VARIABLE
+```
+
+```
+TOKEN DEFINITIONS:
+NUMBER: /^(?:[0-9]+(?:\.[0-9]+)?\b)/
+STRING: /^(?:"(?:[^"])*")/ (le virgolette vengono rimosse nel valore)
+BOOLEAN: /^(?:true|false)/
+```
