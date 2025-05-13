@@ -27,9 +27,9 @@ interface Token {
 
 // Optimized tokenizer using the 'y' (sticky) flag on regexes to improve performance and avoid repeated string slicing.
 const TOKEN_DEFINITIONS = new Map<string, RegExp>([
-  ["WHITESPACE", /\s+/y], // Per saltare gli spazi bianchi
+  ["WHITESPACE", /\s+/y],
   ["NUMBER", /(?:[0-9]+(?:\.[0-9]+)?\b)/y],
-  ["STRING", /"([^"]*)"/y], // Nota: Questa regex per stringhe è semplificata; una reale potrebbe gestire caratteri di escape.
+  ["STRING", /"([^"]*)"/y],
   ["BOOLEAN", /(?:true|false)\b/y],
   [
     "VARIABLE",
@@ -65,9 +65,9 @@ const TOKEN_ORDER = [
 
 function createTokenDefinitionsWithVariable(variableRegexp: RegExp) {
   return new Map<string, RegExp>([
-    ["WHITESPACE", /\s+/y], // Per saltare gli spazi bianchi
+    ["WHITESPACE", /\s+/y],
     ["NUMBER", /(?:[0-9]+(?:\.[0-9]+)?\b)/y],
-    ["STRING", /"([^"]*)"/y], // Nota: Questa regex per stringhe è semplificata; una reale potrebbe gestire caratteri di escape.
+    ["STRING", /"([^"]*)"/y],
     ["BOOLEAN", /(?:true|false)\b/y],
     [
       "VARIABLE", variableRegexp
@@ -106,18 +106,17 @@ export function tokenize(input: string, options?: { variableRegexp: RegExp}): To
       const match = regex.exec(input);
 
       if (match !== null) {
-        // Il flag 'y' assicura che match[0] inizi esattamente a 'pos'
         const matchedText = match[0];
 
         if (type !== "WHITESPACE") {
           let value: any = matchedText;
           if (type === "STRING" && match[1] !== undefined) {
-            value = match[1]; // Estrai il contenuto senza le virgolette
+            value = match[1];
           }
           tokens.push({ type, value });
         }
 
-        pos += matchedText.length; // Move position forward!
+        pos += matchedText.length;
         matchedThisIteration = true;
         break;
       }
@@ -133,10 +132,10 @@ export function tokenize(input: string, options?: { variableRegexp: RegExp}): To
   return tokens;
 }
 
-export function parseExpression(input: string) {
+export function parseExpression(input: string, options?: { variableRegexp: RegExp}) {
   input = input.trim();
 
-  const tokens = tokenize(input);
+  const tokens = tokenize(input, options);
   let pos = 0;
 
   function parse() {
@@ -186,7 +185,7 @@ export function parseExpression(input: string) {
       (tokens[pos].type === "EQ" || tokens[pos].type === "NEQ")
     ) {
       const operator = tokens[pos].type;
-      pos++; // Consumo l'operatore
+      pos++;
       const right = parseRelational();
 
       left = {
@@ -211,7 +210,7 @@ export function parseExpression(input: string) {
         tokens[pos].type === "GTE")
     ) {
       const operator = tokens[pos].type;
-      pos++; // Consumo l'operatore
+      pos++;
       const right = parsePrimary();
 
       left = {
@@ -238,20 +237,19 @@ export function parseExpression(input: string) {
 
     const token = tokens[pos];
 
-    // Gestione delle parentesi
     if (token.type === "LPAREN") {
-      pos++; // Consuma '('
-      const expr = parseExpr(); // Parsifica l'espressione all'interno delle parentesi
+      pos++;
+      const expr = parseExpr();
 
       if (pos >= tokens.length || tokens[pos].type !== "RPAREN") {
         throw new Error("Expected closing parenthesis");
       }
-      pos++; // Consuma ')'
+      pos++;
 
       return expr;
     }
 
-    pos++; // Consuma il token corrente
+    pos++;
 
     switch (token.type) {
       case "NUMBER":
@@ -268,4 +266,8 @@ export function parseExpression(input: string) {
   }
 
   return parse();
+}
+
+export function createParser(options: { variableRegexp: RegExp }) {
+  return (input: string) => parseExpression(input, options);
 }
