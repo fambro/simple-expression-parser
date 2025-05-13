@@ -1,4 +1,5 @@
 # Simple Expression Parser
+
 A lightweight parser for boolean expressions and simple comparisons. This package provides tools to tokenize and parse expressions according to a specific grammar, with support for customizable variable patterns.
 
 ## Grammar
